@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:todolist/data/database.dart';
 import 'package:todolist/model/todo.dart'; // Import ToDo model class
 import 'package:todolist/widgets/todo_items.dart'; // Import ToDoItem widget
 
@@ -20,33 +21,45 @@ class TasksScreen extends StatefulWidget {
 }
 
 class _TasksScreenState extends State<TasksScreen> {
-  final _mybox = Hive.openBox('mybox');
+  final _mybox = Hive.box('mybox');
+  ToDoDatabase db = ToDoDatabase();
 
-  List<ToDo> todosList = ToDo.todoList(); // List of all tasks
+  // List<ToDo> db.toDoList = ToDo.todoList(); // List of all tasks
   List<ToDo> _foundToDo = []; // List of tasks to display based on category
   TaskCategory _selectedCategory =
       TaskCategory.all; // Default selected category
 
   @override
   void initState() {
+    if (_mybox.get('TODOLIST') == null) {
+      db.createInitialData();
+    } else {
+      db.loadData();
+    }
     _updateTasks(); // Initialize tasks based on selected category
     super.initState();
   }
+
+  // @override
+  // void initState() {
+  //   _updateTasks(); // Initialize tasks based on selected category
+  //   super.initState();
+  // }
 
   // Method to update the displayed tasks based on selected category
   void _updateTasks() {
     setState(() {
       switch (_selectedCategory) {
         case TaskCategory.all:
-          _foundToDo = todosList; // Display all tasks
+          _foundToDo = db.toDoList; // Display all tasks
           break;
         case TaskCategory.completed:
-          _foundToDo = todosList
+          _foundToDo = db.toDoList
               .where((todo) => todo.isDone)
               .toList(); // Display completed tasks
           break;
         case TaskCategory.pending:
-          _foundToDo = todosList
+          _foundToDo = db.toDoList
               .where((todo) => !todo.isDone)
               .toList(); // Display pending tasks
           break;
@@ -60,14 +73,16 @@ class _TasksScreenState extends State<TasksScreen> {
       todo.isDone = !todo.isDone; // Toggle completion status
       _updateTasks(); // Update displayed tasks after status change
     });
+    db.updateData(); // Update db
   }
 
   // Method to handle task deletion
   void _deleteToDoItem(String id) {
     setState(() {
-      todosList.removeWhere((item) => item.id == id); // Remove task from list
+      db.toDoList.removeWhere((item) => item.id == id); // Remove task from list
       _updateTasks(); // Update displayed tasks after deletion
     });
+    db.updateData(); // Update db
   }
 
   // Method to show dialog for deleting a new task
@@ -114,9 +129,9 @@ class _TasksScreenState extends State<TasksScreen> {
   void _searchTodoItem(String searchTerm) {
     setState(() {
       if (searchTerm.isEmpty) {
-        _foundToDo = todosList;
+        _foundToDo = db.toDoList;
       } else {
-        _foundToDo = todosList
+        _foundToDo = db.toDoList
             .where((todo) =>
                 todo.todoText.toLowerCase().contains(searchTerm.toLowerCase()))
             .toList();
@@ -174,9 +189,9 @@ class _TasksScreenState extends State<TasksScreen> {
         isDone: false,
       );
 
-      // Add the new task to the todosList
+      // Add the new task to the db.toDoList
       setState(() {
-        todosList.add(newTask);
+        db.toDoList.add(newTask);
         _updateTasks(); // Update the displayed tasks list
       });
     }
