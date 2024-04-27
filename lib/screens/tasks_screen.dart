@@ -67,6 +67,47 @@ class _TasksScreenState extends State<TasksScreen> {
     });
   }
 
+  // Method to show dialog for deleting a new task
+  Future<void> _showDeleteTaskDialog(BuildContext context, String id) async {
+    ToDo toDo = _foundToDo[int.parse(id)];
+
+    await showDialog(
+      context: context,
+      builder: (BuildContext deleteContext) {
+        return AlertDialog(
+          title: Text('Confirm Deletion'),
+          content:
+              Text('Are you sure you want to delete ${toDo.todoText} task?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(deleteContext);
+              },
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                _deleteToDoItem(id);
+                Navigator.pop(deleteContext);
+              },
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
+              ),
+              child: Text(
+                'Delete',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Method to handle todoItem search
   void _searchTodoItem(String searchTerm) {
     setState(() {
       if (searchTerm.isEmpty) {
@@ -243,7 +284,7 @@ class _TasksScreenState extends State<TasksScreen> {
                 itemBuilder: (context, index) => ToDoItem(
                   todo: _foundToDo[index],
                   onToDoChanged: _handleToDoChange,
-                  onDeleteItem: _deleteToDoItem,
+                  onDeleteItem: (id) => _showDeleteTaskDialog(context, id),
                 ),
               ),
             ),
