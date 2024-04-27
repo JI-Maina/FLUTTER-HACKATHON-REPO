@@ -1,6 +1,9 @@
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+
 import 'package:flutter/material.dart';
 import 'package:todolist/model/todo.dart'; // Import ToDo model class
 import 'package:todolist/widgets/todo_items.dart'; // Import ToDoItem widget
+
 // Enumeration to represent different task categories
 enum TaskCategory {
   all,
@@ -18,7 +21,8 @@ class TasksScreen extends StatefulWidget {
 class _TasksScreenState extends State<TasksScreen> {
   List<ToDo> todosList = ToDo.todoList(); // List of all tasks
   List<ToDo> _foundToDo = []; // List of tasks to display based on category
-  TaskCategory _selectedCategory = TaskCategory.all; // Default selected category
+  TaskCategory _selectedCategory =
+      TaskCategory.all; // Default selected category
 
   @override
   void initState() {
@@ -34,10 +38,14 @@ class _TasksScreenState extends State<TasksScreen> {
           _foundToDo = todosList; // Display all tasks
           break;
         case TaskCategory.completed:
-          _foundToDo = todosList.where((todo) => todo.isDone).toList(); // Display completed tasks
+          _foundToDo = todosList
+              .where((todo) => todo.isDone)
+              .toList(); // Display completed tasks
           break;
         case TaskCategory.pending:
-          _foundToDo = todosList.where((todo) => !todo.isDone).toList(); // Display pending tasks
+          _foundToDo = todosList
+              .where((todo) => !todo.isDone)
+              .toList(); // Display pending tasks
           break;
       }
     });
@@ -56,6 +64,19 @@ class _TasksScreenState extends State<TasksScreen> {
     setState(() {
       todosList.removeWhere((item) => item.id == id); // Remove task from list
       _updateTasks(); // Update displayed tasks after deletion
+    });
+  }
+
+  void _searchTodoItem(String searchTerm) {
+    setState(() {
+      if (searchTerm.isEmpty) {
+        _foundToDo = todosList;
+      } else {
+        _foundToDo = todosList
+            .where((todo) =>
+                todo.todoText.toLowerCase().contains(searchTerm.toLowerCase()))
+            .toList();
+      }
     });
   }
 
@@ -168,7 +189,8 @@ class _TasksScreenState extends State<TasksScreen> {
             ListTile(
               title: Text("Completed Tasks"),
               leading: Icon(Icons.check_box),
-              onTap: () => _setSelectedCategory(TaskCategory.completed, context),
+              onTap: () =>
+                  _setSelectedCategory(TaskCategory.completed, context),
             ),
             ListTile(
               title: Text("Pending Tasks"),
@@ -198,9 +220,7 @@ class _TasksScreenState extends State<TasksScreen> {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: TextField(
-                onChanged: (keyword) {
-                  // Implement search functionality if needed
-                },
+                onChanged: (keyword) => _searchTodoItem(keyword),
                 decoration: InputDecoration(
                   contentPadding: EdgeInsets.all(0),
                   prefixIcon: Icon(
